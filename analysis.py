@@ -13,6 +13,9 @@ def main():
     df = pd.read_csv("movies.csv")
     df = df.set_index("id")
 
+    analyse_budget_revenue(df)
+
+def analyse_budget_revenue(df):
     #extract average budget
     avg_budget = df["budget"].mean()
     print("Average budget: ", avg_budget)
