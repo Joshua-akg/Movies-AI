@@ -11,14 +11,17 @@ def main():
 
     # Read in the Movies dataset
     df = pd.read_csv("movies.csv")
+
+    analyse_popularity_revenue(df)
+
     # df = df.set_index("id")
-    df["release_date"] = pd.to_datetime(df["release_date"])
+    # df["release_date"] = pd.to_datetime(df["release_date"])
 
     #get first row of df
     # print(df.iloc[0]["release_date"])
 
     # create new column for season of release
-    df["season"] = df["release_date"].apply(get_season)
+    # df["season"] = df["release_date"].apply(get_season)
     # print(df["season"])
 
     # model = LinearRegression()
@@ -44,6 +47,27 @@ def get_season(date):
         return 3
     else:
         return 4
+
+def analyse_popularity_revenue(df):
+    #plot popularity vs revenue
+    sns.scatterplot(x="popularity", y="revenue", data=df)
+    # plt.scatter(df["popularity"], df["revenue"])
+
+    plt.xlabel("Popularity")
+    plt.ylabel("Revenue")
+    plt.title("Popularity vs Revenue")
+
+    # Train a linear regression model
+    x = df["popularity"].values.reshape(-1, 1)
+    y = df["revenue"].values.reshape(-1, 1)
+
+    model = LinearRegression()
+    model.fit(x, y)
+
+    # Plot the regression line
+    # plt.plot(x, model.predict(x), color="red")
+
+    plt.show()
 
 def analyse_budget_revenue(df):
     #extract average budget
