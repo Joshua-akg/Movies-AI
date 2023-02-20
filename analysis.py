@@ -17,7 +17,10 @@ def main():
     #create new column for profit
     df["profit"] = df["revenue"] - df["budget"]
 
-    analyse_correlation(df, x_parameter="popularity", y_parameter="profit")
+    #drop NaN runtime values
+    df = df.dropna(subset=["runtime"])
+
+    analyse_linear_correlation(df, x_parameter="runtime", y_parameter="vote_average")
 
     # test_hyperparameter(df)
 
@@ -45,7 +48,7 @@ def main():
     # plt.ylabel('Revenue')
     # plt.show()
 
-def analyse_correlation(df, x_parameter, y_parameter):
+def analyse_linear_correlation(df, x_parameter, y_parameter):
     #plot popularity vs profit
     sns.scatterplot(x=x_parameter, y=y_parameter, data=df)
 
@@ -61,7 +64,32 @@ def analyse_correlation(df, x_parameter, y_parameter):
     model.fit(x, y)
 
     # Plot the regression line
-    plt.plot(x, model.predict(x), color="red")
+    # plt.plot(x, model.predict(x), color="red")
+
+    accuracy = model.score(x, y)*100
+    print("Accuracy: ", accuracy)
+
+    plt.show()
+
+def analyse_exp_correlation(df, x_parameter, y_parameter):
+    #plot popularity vs profit
+    sns.scatterplot(x=x_parameter, y=y_parameter, data=df)
+
+    plt.xlabel(x_parameter)
+    plt.ylabel(y_parameter)
+    plt.title(x_parameter.capitalize()+" vs "+y_parameter.capitalize())
+
+    # Train a linear regression model
+    x = df[x_parameter].values.reshape(-1, 1)
+    y = np.log(df[y_parameter].values.reshape(-1, 1))
+
+    model = LinearRegression().fit(x, y)
+
+    # Plot the regression line
+    plt.plot(x, np.exp(model.predict(x)), color="red")
+
+    accuracy = model.score(x, np.log(y))*100
+    print("Accuracy: ", accuracy)
 
     plt.show()
 
