@@ -17,9 +17,9 @@ def main():
     #create new column for profit
     df["profit"] = df["revenue"] - df["budget"]
 
-    # analyse_popularity_profit_nonlinear(df, 6)
+    analyse_correlation(df, x_parameter="popularity", y_parameter="profit")
 
-    test_hyperparameter(df)
+    # test_hyperparameter(df)
 
     # df = df.set_index("id")
     # df["release_date"] = pd.to_datetime(df["release_date"])
@@ -44,6 +44,26 @@ def main():
     # plt.xlabel('Season of release')
     # plt.ylabel('Revenue')
     # plt.show()
+
+def analyse_correlation(df, x_parameter, y_parameter):
+    #plot popularity vs profit
+    sns.scatterplot(x=x_parameter, y=y_parameter, data=df)
+
+    plt.xlabel(x_parameter)
+    plt.ylabel(y_parameter)
+    plt.title(x_parameter.capitalize()+" vs "+y_parameter.capitalize())
+
+    # Train a linear regression model
+    x = df[x_parameter].values.reshape(-1, 1)
+    y = df[y_parameter].values.reshape(-1, 1)
+
+    model = LinearRegression()
+    model.fit(x, y)
+
+    # Plot the regression line
+    plt.plot(x, model.predict(x), color="red")
+
+    plt.show()
 
 def get_season(date):
     if date.month in (3, 4, 5):
@@ -216,7 +236,7 @@ def test_hyperparameter(df):
     #set and print axis parameters
     x_parameter = "popularity"
     y_parameter = "revenue"
-    print("Testing hyperparameter for ", x_parameter, " vs ", y_parameter,":")
+    print("Testing hyperparameter for", x_parameter, "vs", y_parameter,":")
 
     #create new dictionary to store the accuracy scores
     scores = {}
