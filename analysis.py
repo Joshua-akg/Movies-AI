@@ -12,7 +12,7 @@ def main():
     # Read in the Movies dataset
     df = pd.read_csv("movies.csv")
 
-    analyse_popularity_revenue(df)
+    analyse_popularity_profit(df)
 
     # df = df.set_index("id")
     # df["release_date"] = pd.to_datetime(df["release_date"])
@@ -66,6 +66,30 @@ def analyse_popularity_revenue(df):
 
     # Plot the regression line
     # plt.plot(x, model.predict(x), color="red")
+
+    plt.show()
+
+def analyse_popularity_profit(df):
+    #create new column for profit
+    df["profit"] = df["revenue"] - df["budget"]
+
+    #plot popularity vs profit
+    sns.scatterplot(x="popularity", y="profit", data=df)
+    # plt.scatter(df["popularity"], df["profit"])
+
+    plt.xlabel("Popularity")
+    plt.ylabel("Profit")
+    plt.title("Popularity vs Profit")
+
+    # Train a linear regression model
+    x = df["popularity"].values.reshape(-1, 1)
+    y = df["profit"].values.reshape(-1, 1)
+
+    model = LinearRegression()
+    model.fit(x, y)
+
+    # Plot the regression line
+    plt.plot(x, model.predict(x), color="red")
 
     plt.show()
 
