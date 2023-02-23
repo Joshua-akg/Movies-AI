@@ -12,15 +12,22 @@ def main():
     sns.set_theme()
 
     # Read in the Movies dataset
+    print("Importing movies.csv... \n")
     df = pd.read_csv("movies.csv")
-
-    #create new column for profit
-    df["profit"] = df["revenue"] - df["budget"]
 
     #drop NaN runtime values
     df = df.dropna(subset=["runtime"])
 
-    analyse_linear_correlation(df, x_parameter="runtime", y_parameter="vote_average")
+    print("Printing Dataset Statistics...")
+    print(df.describe(), "\n")
+
+    #create new column for profit
+    df["profit"] = df["revenue"] - df["budget"]
+
+    #create new column for total vote score
+    df["total_vote_score"] = df["vote_average"] * df["vote_count"]
+
+    analyse_linear_correlation(df, x_parameter="runtime", y_parameter="total_vote_score")
 
     # test_hyperparameter(df)
 
@@ -64,7 +71,10 @@ def analyse_linear_correlation(df, x_parameter, y_parameter):
     model.fit(x, y)
 
     # Plot the regression line
-    # plt.plot(x, model.predict(x), color="red")
+    plt.plot(x, model.predict(x), color="red")
+
+    #get the x value when y = 0
+    print("X Intercept: ", -model.intercept_/model.coef_,"\n")
 
     accuracy = model.score(x, y)*100
     print("Accuracy: ", accuracy)
