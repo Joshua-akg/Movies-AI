@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pprint
+import json
 
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
@@ -15,11 +17,19 @@ def main():
     print("Importing movies.csv... \n")
     df = pd.read_csv("movies.csv")
 
-    #drop NaN runtime values
-    df = df.dropna(subset=["runtime"])
+    #preprocess data
+    df = preprocess(df)
 
     print("Printing Dataset Statistics...")
     print(df.describe(), "\n")
+
+    analyse_genre(df)
+
+def preprocess(df):
+    print("Pre-processing data... \n")
+
+    #drop NaN runtime values
+    df = df.dropna(subset=["runtime"])
 
     #create new column for profit
     df["profit"] = df["revenue"] - df["budget"]
@@ -27,33 +37,87 @@ def main():
     #create new column for total vote score
     df["total_vote_score"] = df["vote_average"] * df["vote_count"]
 
-    analyse_linear_correlation(df, x_parameter="runtime", y_parameter="total_vote_score")
+    #create new column for season of release
+    df["release_date"] = pd.to_datetime(df["release_date"])
+    df["season"] = df["release_date"].apply(get_season)
 
-    # test_hyperparameter(df)
+    return df
 
-    # df = df.set_index("id")
-    # df["release_date"] = pd.to_datetime(df["release_date"])
+def filter_movies(df):
+    # filter out movies that have negative profit
+    # df = df[df["profit"] > 0]
 
-    #get first row of df
-    # print(df.iloc[0]["release_date"])
+    # filter out movies whose popularity isn't in the top 75%
+    df = df[df["popularity"] > df["popularity"].quantile(0.75)]
 
-    # create new column for season of release
-    # df["season"] = df["release_date"].apply(get_season)
-    # print(df["season"])
+    # print the value of the 75th percentile for popularity
+    print("75th Percentile for Popularity: ", df["popularity"].quantile(0.75), "\n")
 
-    # model = LinearRegression()
-    # model.fit(df[["season"]], df["revenue"])
+    return df
 
-    # X = df[['season']]
-    # y = df['revenue']
-    # y_pred = model.predict(X)
+def analyse_genre(df):
+    # filter movies
+    df = filter_movies(df)
 
-    # plt.scatter(X, y, color='blue')
-    # plt.plot(X, y_pred, color='red', linewidth=2)
+    pprint.pprint(df)
 
-    # plt.xlabel('Season of release')
-    # plt.ylabel('Revenue')
-    # plt.show()
+    #create dictionary to store genre and occurence count
+    genre_dict = {}
+
+    # use eval to convert string to list of dictionaries
+    for index,row in df.iterrows():
+        genres = eval(row["genres"])
+
+        # loop through each genre in the list and update the dictionary
+        for genre in genres:
+            genre_name = genre["name"]
+            
+            if genre_name in genre_dict:
+                genre_dict[genre_name] += 1
+            else:
+                genre_dict[genre_name] = 1
+
+    #sort dictionary by value and print
+    genre_dict = {k: v for k, v in sorted(genre_dict.items(), key=lambda item: item[1], reverse=True)}
+    pprint.pprint(genre_dict)
+
+    plot_genre_count(genre_dict)
+
+def analyse_genre(df):
+    # filter movies
+    df = filter_movies(df)
+
+    pprint.pprint(df)
+
+    #create dictionary to store genre and occurence count
+    genre_dict = {}
+
+    # use eval to convert string to list of dictionaries
+    for index,row in df.iterrows():
+        genres = eval(row["genres"])
+
+        # loop through each genre in the list and update the dictionary
+        for genre in genres:
+            genre_name = genre["name"]
+            
+            if genre_name in genre_dict:
+                genre_dict[genre_name] += 1
+            else:
+                genre_dict[genre_name] = 1
+
+    #sort dictionary by value and print
+    genre_dict = {k: v for k, v in sorted(genre_dict.items(), key=lambda item: item[1], reverse=True)}
+    pprint.pprint(genre_dict)
+
+    plot_genre_count(genre_dict)
+
+def plot_genre_count(genre_dict):
+    #plot genre vs count as horizontal bar chart
+    plt.barh(list(genre_dict.keys()), genre_dict.values(), color='b')
+    plt.xlabel("Number of Movies")
+    plt.ylabel("Genre")
+    plt.title("Number of Movies per Genre")
+    plt.show()
 
 def analyse_linear_correlation(df, x_parameter, y_parameter):
     #plot popularity vs profit
@@ -312,7 +376,6 @@ def test_hyperparameter(df):
     
     #print the degree with the highest accuracy
     print("Best degree: ", max(scores, key=scores.get))
-
 
 if __name__ == "__main__":
     main()
