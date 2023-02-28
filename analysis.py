@@ -23,7 +23,7 @@ def main():
     print("Printing Dataset Statistics...")
     print(df.describe(), "\n")
 
-    analyse_keyword(df)
+    analyse_languages(df)
 
 def preprocess(df):
     print("Pre-processing data... \n")
@@ -54,6 +54,80 @@ def filter_movies(df):
     print("75th Percentile for Popularity: ", df["popularity"].quantile(0.75), "\n")
 
     return df
+
+def analyse_languages(df):
+    # filter movies
+    df = filter_movies(df)
+
+    pprint.pprint(df)
+
+    #create dictionary to store genre and occurence count
+    language_dict = {}
+
+    # use eval to convert string to list of dictionaries
+    for index,row in df.iterrows():
+        languages = eval(row["spoken_languages"])
+
+        # loop through each genre in the list and update the dictionary
+        for language in languages:
+            language_name = iso_to_language(language["iso_639_1"])
+            
+            if language_name in language_dict:
+                language_dict[language_name] += 1
+            else:
+                language_dict[language_name] = 1    
+
+    # get the top 40 keywords in ascending order
+    language_dict = {k: v for k, v in sorted(language_dict.items(), key=lambda item: item[1], reverse=True)[:30]}
+
+    #sort dictionary by value and print
+    language_dict = {k: v for k, v in sorted(language_dict.items(), key=lambda item: item[1], reverse=True)}
+
+    pprint.pprint(language_dict)
+    plot_language_count(language_dict)
+
+def plot_language_count(language_dict):
+    #plot genre vs count as horizontal bar chart
+    plt.barh(list(language_dict.keys()), language_dict.values(), color='b')
+    plt.xlabel("Number of Popular Movies")
+    plt.ylabel("Spoken Languages")
+    plt.title("Number of Popular Movies per Spoken Language")
+    plt.show()
+
+def iso_to_language(iso_code):
+    languages = {
+        'en': 'English',
+        'fr': 'French',
+        'es': 'Spanish',
+        'de': 'German',
+        'ru': 'Russian',
+        'it': 'Italian',
+        'zh': 'Chinese',
+        'ja': 'Japanese',
+        'ar': 'Arabic',
+        'pt': 'Portuguese',
+        'la': 'Latin',
+        'th': 'Thai',
+        'cn': 'Chinese',
+        'hi': 'Hindi',
+        'pl': 'Polish',
+        'ko': 'Korean',
+        'he': 'Hebrew',
+        'cs': 'Czech',
+        'el': 'Greek',
+        'hu': 'Hungarian',
+        'sv': 'Swedish',
+        'tr': 'Turkish',
+        'ur': 'Urdu',
+        'vi': 'Vietnamese',
+        'ro': 'Romanian',
+        'no': 'Norwegian',
+        'uk': 'Ukrainian',
+        'fa': 'Persian',
+        'yi': 'Yiddish',
+        'da': 'Danish'
+    }
+    return languages.get(iso_code, 'Unknown language')
 
 def analyse_genre(df):
     # filter movies
@@ -113,6 +187,45 @@ def analyse_keyword(df):
 
     pprint.pprint(keyword_dict)
     plot_word_count(keyword_dict)
+
+def analyse_companies(df):
+    # filter movies
+    df = filter_movies(df)
+
+    pprint.pprint(df)
+
+    #create dictionary to store genre and occurence count
+    company_dict = {}
+
+    # use eval to convert string to list of dictionaries
+    for index,row in df.iterrows():
+        companies = eval(row["production_companies"])
+
+        # loop through each genre in the list and update the dictionary
+        for company in companies:
+            company_name = company["name"]
+            
+            if company_name in company_dict:
+                company_dict[company_name] += 1
+            else:
+                company_dict[company_name] = 1    
+
+    # get the top 40 keywords in ascending order
+    company_dict = {k: v for k, v in sorted(company_dict.items(), key=lambda item: item[1], reverse=True)[:30]}
+
+    #sort dictionary by value and print
+    company_dict = {k: v for k, v in sorted(company_dict.items(), key=lambda item: item[1], reverse=True)}
+
+    pprint.pprint(company_dict)
+    plot_company_count(company_dict)
+
+def plot_company_count(company_dict):
+    #plot genre vs count as horizontal bar chart
+    plt.barh(list(company_dict.keys()), company_dict.values(), color='b')
+    plt.xlabel("Number of Profitable Movies")
+    plt.ylabel("Production Companies")
+    plt.title("Number of Profitable Movies per Production Companies")
+    plt.show()
 
 def plot_word_count(keyword_dict):
     #plot genre vs count as horizontal bar chart
