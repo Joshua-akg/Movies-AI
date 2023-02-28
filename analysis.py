@@ -23,7 +23,7 @@ def main():
     print("Printing Dataset Statistics...")
     print(df.describe(), "\n")
 
-    analyse_genre(df)
+    analyse_keyword(df)
 
 def preprocess(df):
     print("Pre-processing data... \n")
@@ -83,33 +83,44 @@ def analyse_genre(df):
 
     plot_genre_count(genre_dict)
 
-def analyse_genre(df):
+def analyse_keyword(df):
     # filter movies
     df = filter_movies(df)
 
     pprint.pprint(df)
 
     #create dictionary to store genre and occurence count
-    genre_dict = {}
+    keyword_dict = {}
 
     # use eval to convert string to list of dictionaries
     for index,row in df.iterrows():
-        genres = eval(row["genres"])
+        keywords = eval(row["keywords"])
 
         # loop through each genre in the list and update the dictionary
-        for genre in genres:
-            genre_name = genre["name"]
+        for keyword in keywords:
+            word_name = keyword["name"]
             
-            if genre_name in genre_dict:
-                genre_dict[genre_name] += 1
+            if word_name in keyword_dict:
+                keyword_dict[word_name] += 1
             else:
-                genre_dict[genre_name] = 1
+                keyword_dict[word_name] = 1    
+
+    # get the top 40 keywords in ascending order
+    keyword_dict = {k: v for k, v in sorted(keyword_dict.items(), key=lambda item: item[1], reverse=True)[:30]}
 
     #sort dictionary by value and print
-    genre_dict = {k: v for k, v in sorted(genre_dict.items(), key=lambda item: item[1], reverse=True)}
-    pprint.pprint(genre_dict)
+    keyword_dict = {k: v for k, v in sorted(keyword_dict.items(), key=lambda item: item[1], reverse=True)}
 
-    plot_genre_count(genre_dict)
+    pprint.pprint(keyword_dict)
+    plot_word_count(keyword_dict)
+
+def plot_word_count(keyword_dict):
+    #plot genre vs count as horizontal bar chart
+    plt.barh(list(keyword_dict.keys()), keyword_dict.values(), color='b')
+    plt.xlabel("Number of Popular Movies")
+    plt.ylabel("Top 30 Keywords")
+    plt.title("Number of Popular Movies per Keywords")
+    plt.show()
 
 def plot_genre_count(genre_dict):
     #plot genre vs count as horizontal bar chart
