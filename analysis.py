@@ -23,7 +23,7 @@ def main():
     print("Printing Dataset Statistics...")
     print(df.describe(), "\n")
 
-    analyse_languages(df)
+    analyse_seasons(df)
 
 def preprocess(df):
     print("Pre-processing data... \n")
@@ -45,15 +45,48 @@ def preprocess(df):
 
 def filter_movies(df):
     # filter out movies that have negative profit
-    # df = df[df["profit"] > 0]
+    df = df[df["profit"] > 0]
 
     # filter out movies whose popularity isn't in the top 75%
-    df = df[df["popularity"] > df["popularity"].quantile(0.75)]
+    # df = df[df["popularity"] > df["popularity"].quantile(0.75)]
 
     # print the value of the 75th percentile for popularity
-    print("75th Percentile for Popularity: ", df["popularity"].quantile(0.75), "\n")
+    # print("75th Percentile for Popularity: ", df["popularity"].quantile(0.75), "\n")
 
     return df
+
+def analyse_seasons(df):
+    # filter movies
+    df = filter_movies(df)
+
+    pprint.pprint(df)
+
+    #create dictionary to store genre and occurence count
+    season_dict = {'Winter': 0, 'Spring': 0, 'Summer': 0, 'Autumn': 0}
+
+
+    # count the number of occurencies of each season and update the dictionary
+    for index,row in df.iterrows():
+        season = get_season_name(row["season"])
+
+        if season in season_dict:
+            season_dict[season] += 1
+        else:
+            season_dict[season] = 1
+
+    # sort dictionary by value
+    season_dict = {k: v for k, v in sorted(season_dict.items(), key=lambda item: item[1], reverse=True)}
+
+    pprint.pprint(season_dict)
+    plot_season_count(season_dict)
+
+def plot_season_count(season_dict):
+    #plot genre vs count as horizontal bar chart
+    plt.barh(list(season_dict.keys()), season_dict.values(), color='b')
+    plt.xlabel("Number of Profitable Movies")
+    plt.ylabel("Season of Release")
+    plt.title("Number of Profitable Movies per Season of Release")
+    plt.show()
 
 def analyse_languages(df):
     # filter movies
@@ -300,6 +333,16 @@ def get_season(date):
         return 3
     else:
         return 4
+    
+def get_season_name(season):
+    if season == 1:
+        return "Spring"
+    elif season == 2:
+        return "Summer"
+    elif season == 3:
+        return "Autumn"
+    else:
+        return "Winter"
 
 def analyse_popularity_revenue(df):
     #plot popularity vs revenue
